@@ -12,6 +12,7 @@ export default function RootLayout({
 }>) {
 
   const handleResetClick = () => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
     window.location.reload();
   };
 

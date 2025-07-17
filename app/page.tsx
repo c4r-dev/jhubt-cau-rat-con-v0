@@ -58,7 +58,9 @@ export default function Home() {
     setAdditionalPatternsText('');
     setShowSliderBox(true);
     setAssessmentSubmitted(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 0);
   };
 
   const isButtonDisabled = criteriaText.length < 10;
