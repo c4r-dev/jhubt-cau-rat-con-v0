@@ -151,52 +151,42 @@ export default function Home() {
                   textAlign: 'center'
                 }}
               >
-                <div style={{
-                  width: '2px',
-                  height: '10px',
-                  backgroundColor: '#333',
-                  margin: '0 auto 5px'
-                }} />
                 <span style={{ fontSize: '12px', color: '#333' }}>{tick}</span>
               </div>
             ))}
           </div>
           
-          {/* Slider value positioned at 50 tic, slightly left */}
-          <div style={{ 
-            position: 'relative',
-            marginTop: '15px',
-            height: '20px'
-          }}>
-            <div style={{
-              position: 'absolute',
-              left: '48%',
-              transform: 'translateX(-50%)',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              color: '#333',
-              textAlign: 'center'
-            }}>
-              {sliderValue}
-            </div>
-          </div>
           
           {/* Labels */}
           <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            marginTop: '10px',
+            position: 'relative',
+            marginTop: '35px',
             fontSize: '14px',
             color: '#555'
           }}>
-            <span style={{ textAlign: 'left' }}>No Causal Relationship</span>
-            <span style={{ textAlign: 'center' }}>Uncertain</span>
-            <span style={{ textAlign: 'right' }}>Strong Causal Relationship</span>
+            <span style={{ position: 'absolute', left: '0%', transform: 'translateX(0%)', textAlign: 'left' }}>No Causal<br/>Relationship</span>
+            <span style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', textAlign: 'center' }}>Uncertain</span>
+            <span style={{ position: 'absolute', left: '100%', transform: 'translateX(-100%)', textAlign: 'right' }}>Strong Causal<br/>Relationship</span>
           </div>
         </div>
         
+        {/* Slider value */}
+        <div style={{ 
+          marginTop: '60px',
+          textAlign: 'center',
+          marginBottom: '20px'
+        }}>
+          <div style={{
+            fontSize: '32px',
+            fontWeight: 'bold',
+            color: '#6F00FF'
+          }}>
+            {sliderValue}
+          </div>
+        </div>
+
         {/* Text box for criteria */}
-        <div style={{ marginTop: '30px' }}>
+        <div>
           <h4 style={{ 
             marginBottom: '10px', 
             color: '#333',
