@@ -15,6 +15,14 @@ interface Question {
   'Key Findings': KeyFinding[];
 }
 
+interface UserResponse {
+  id: string;
+  exampleName: string;
+  confidenceRating: number;
+  explanation: string;
+  strengthenConfidence: string;
+  timestamp: number;
+}
 
 export default function Home() {
   const [currentExampleIndex, setCurrentExampleIndex] = useState(0);
@@ -24,10 +32,19 @@ export default function Home() {
   const [showSliderBox, setShowSliderBox] = useState(true);
   const [additionalPatternsText, setAdditionalPatternsText] = useState('');
   const [assessmentSubmitted, setAssessmentSubmitted] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [allResponses, setAllResponses] = useState<UserResponse[]>([]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentExampleIndex]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('causalConfidenceResponses');
+    if (saved) {
+      setAllResponses(JSON.parse(saved));
+    }
+  }, []);
 
   const handleContinue = () => {
     if (showSliderBox) {
@@ -35,7 +52,24 @@ export default function Home() {
     }
   };
 
+  const saveResponse = () => {
+    const response: UserResponse = {
+      id: Date.now().toString(),
+      exampleName: currentExample.Example,
+      confidenceRating: sliderValue,
+      explanation: criteriaText,
+      strengthenConfidence: additionalPatternsText,
+      timestamp: Date.now()
+    };
+    
+    const updatedResponses = [...allResponses, response];
+    setAllResponses(updatedResponses);
+    localStorage.setItem('causalConfidenceResponses', JSON.stringify(updatedResponses));
+  };
+
   const handleSubmitAssessment = () => {
+    saveResponse();
+    
     if (currentExampleIndex < data.length - 1) {
       // Move to next example
       setCurrentExampleIndex(currentExampleIndex + 1);
@@ -66,6 +100,153 @@ export default function Home() {
   const isButtonDisabled = criteriaText.length < 10;
   const isLastExample = currentExampleIndex === data.length - 1;
   const currentExample = data[currentExampleIndex];
+
+  if (showResults) {
+    return (
+      <div className="container" style={{ 
+        width: '100%', 
+        maxWidth: '1200px',
+        margin: '0 auto', 
+        backgroundColor: '#f5f5f5', 
+        minHeight: '100vh',
+        padding: '20px'
+      }}>
+        <div style={{ marginBottom: '30px', textAlign: 'center' }}>
+          <h1 style={{ color: '#333', marginBottom: '10px' }}>Results Summary</h1>
+          <p style={{ color: '#666', marginBottom: '20px' }}>
+            Responses from all participants ({allResponses.length} total)
+          </p>
+          <button
+            onClick={() => setShowResults(false)}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#6F00FF',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer',
+              marginBottom: '20px'
+            }}
+          >
+            Back to Assessment
+          </button>
+        </div>
+
+        {allResponses.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '40px', 
+            backgroundColor: 'white', 
+            borderRadius: '8px',
+            border: '1px solid #ddd'
+          }}>
+            <p style={{ color: '#666', fontSize: '18px' }}>No responses yet. Complete an assessment to see results here.</p>
+          </div>
+        ) : (
+          <div style={{ 
+            backgroundColor: 'white', 
+            borderRadius: '8px', 
+            border: '1px solid #ddd',
+            overflowX: 'auto'
+          }}>
+            <table style={{ 
+              width: '100%', 
+              borderCollapse: 'collapse',
+              minWidth: '800px'
+            }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f8f9fa' }}>
+                  <th style={{ 
+                    padding: '15px', 
+                    textAlign: 'left', 
+                    borderBottom: '2px solid #dee2e6',
+                    fontWeight: 'bold',
+                    color: '#495057',
+                    width: '15%'
+                  }}>
+                    Confidence Rating
+                  </th>
+                  <th style={{ 
+                    padding: '15px', 
+                    textAlign: 'left', 
+                    borderBottom: '2px solid #dee2e6',
+                    fontWeight: 'bold',
+                    color: '#495057',
+                    width: '42.5%'
+                  }}>
+                    Explanation for Causal Confidence
+                  </th>
+                  <th style={{ 
+                    padding: '15px', 
+                    textAlign: 'left', 
+                    borderBottom: '2px solid #dee2e6',
+                    fontWeight: 'bold',
+                    color: '#495057',
+                    width: '42.5%'
+                  }}>
+                    What Would Strengthen Causal Confidence
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {allResponses.map((response, index) => (
+                  <tr key={response.id} style={{ 
+                    borderBottom: index < allResponses.length - 1 ? '1px solid #dee2e6' : 'none'
+                  }}>
+                    <td style={{ 
+                      padding: '15px', 
+                      verticalAlign: 'top',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{
+                        fontSize: '24px',
+                        fontWeight: 'bold',
+                        color: '#6F00FF',
+                        marginBottom: '5px'
+                      }}>
+                        {response.confidenceRating}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#666',
+                        marginBottom: '5px'
+                      }}>
+                        {response.exampleName}
+                      </div>
+                      <div style={{
+                        fontSize: '10px',
+                        color: '#999'
+                      }}>
+                        {new Date(response.timestamp).toLocaleDateString()}
+                      </div>
+                    </td>
+                    <td style={{ 
+                      padding: '15px', 
+                      verticalAlign: 'top',
+                      lineHeight: '1.5'
+                    }}>
+                      <div style={{ color: '#333' }}>
+                        {response.explanation}
+                      </div>
+                    </td>
+                    <td style={{ 
+                      padding: '15px', 
+                      verticalAlign: 'top',
+                      lineHeight: '1.5'
+                    }}>
+                      <div style={{ color: '#333' }}>
+                        {response.strengthenConfidence}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="container" style={{ 
@@ -395,19 +576,86 @@ export default function Home() {
       )}
       
       <div style={{ textAlign: 'center', paddingBottom: '40px' }}>
-        <button
-          className="button"
-          onClick={showSliderBox ? handleContinue : (assessmentSubmitted ? handleRestart : handleSubmitAssessment)}
-          disabled={showSliderBox ? isButtonDisabled : (!assessmentSubmitted && additionalPatternsText.length < 10)}
-          style={{
-            border: 'none',
-            borderRadius: '5px',
-            cursor: (showSliderBox ? isButtonDisabled : (!assessmentSubmitted && additionalPatternsText.length < 10)) ? 'not-allowed' : 'pointer',
-            opacity: (showSliderBox ? isButtonDisabled : (!assessmentSubmitted && additionalPatternsText.length < 10)) ? 0.5 : 1
-          }}
-        >
-          {showSliderBox ? 'CONTINUE' : (assessmentSubmitted ? 'RESTART' : 'SUBMIT ASSESSMENT')}
-        </button>
+        {assessmentSubmitted ? (
+          <div>
+            <p style={{ 
+              marginBottom: '20px', 
+              color: '#333', 
+              fontSize: '18px',
+              fontWeight: '500'
+            }}>
+              Assessment Complete! Thank you for your participation.
+            </p>
+            <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                className="button"
+                onClick={() => setShowResults(true)}
+                style={{
+                  backgroundColor: '#6F00FF',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  minHeight: '48px'
+                }}
+              >
+                VIEW RESULTS
+              </button>
+              <button
+                className="button"
+                onClick={handleRestart}
+                style={{
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  minHeight: '48px'
+                }}
+              >
+                RESTART
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            className="button"
+            onClick={showSliderBox ? handleContinue : handleSubmitAssessment}
+            disabled={showSliderBox ? isButtonDisabled : (additionalPatternsText.length < 10)}
+            style={{
+              border: 'none',
+              borderRadius: '5px',
+              cursor: (showSliderBox ? isButtonDisabled : (additionalPatternsText.length < 10)) ? 'not-allowed' : 'pointer',
+              opacity: (showSliderBox ? isButtonDisabled : (additionalPatternsText.length < 10)) ? 0.5 : 1
+            }}
+          >
+            {showSliderBox ? 'CONTINUE' : 'SUBMIT ASSESSMENT'}
+          </button>
+        )}
+        
+        {allResponses.length > 0 && !assessmentSubmitted && (
+          <div style={{ marginTop: '15px' }}>
+            <button
+              onClick={() => setShowResults(true)}
+              style={{
+                backgroundColor: 'transparent',
+                color: '#6F00FF',
+                border: '2px solid #6F00FF',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                padding: '8px 16px',
+                fontSize: '14px',
+                textDecoration: 'underline'
+              }}
+            >
+              View Previous Results
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
